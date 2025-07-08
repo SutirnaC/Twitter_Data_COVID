@@ -1,0 +1,155 @@
+import numpy as np 
+import pandas as pd 
+import re
+import nltk 
+from wordcloud import WordCloud, STOPWORDS 
+from collections import Counter
+import matplotlib.pyplot as plt
+%matplotlib inline
+
+covid_tweet=pd.read_csv('tweets_corona.txt', sep="\t", header=None)
+covid_tweet.head()
+
+plot_size = plt.rcParams["figure.figsize"] 
+print(plot_size[0]) 
+print(plot_size[1])
+
+plot_size[0] = 8
+plot_size[1] = 6
+plt.rcParams["figure.figsize"] = plot_size 
+
+comment_words = ''
+stopwords =set(STOPWORDS)
+covid_tweet1 = str(covid_tweet) 
+tokens = covid_tweet1.split() 
+for i in range(len(tokens)): 
+        tokens[i] = tokens[i].lower() 
+comment_words += " ".join(tokens)+" "
+wordcloud = WordCloud(width = 600, height = 600, 
+                background_color ='black', 
+                stopwords = stopwords, 
+                min_font_size = 10).generate(comment_words) 
+
+# plot the WordCloud image                        
+plt.figure(figsize = (6, 6), facecolor = None) 
+plt.imshow(wordcloud,interpolation='bilinear') 
+plt.axis("off") 
+plt.tight_layout(pad = 0) 
+  
+plt.show() 
+
+#Here we have obtained the word cloud of the corona tweets as asked in the problem statement
+
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer 
+  
+# function to print sentiments 
+# of the sentence. 
+def sentiment_scores(sentence): 
+  
+    # Create a SentimentIntensityAnalyzer object. 
+    sid_obj = SentimentIntensityAnalyzer() 
+  
+    # polarity_scores method of SentimentIntensityAnalyzer 
+    # oject gives a sentiment dictionary. 
+    # which contains pos, neg, neu, and compound scores. 
+    sentiment_dict = sid_obj.polarity_scores(sentence) 
+      
+    print("Overall sentiment dictionary is : ", sentiment_dict) 
+    print("sentence was rated as ", sentiment_dict['neg']*100, "% Negative") 
+    print("sentence was rated as ", sentiment_dict['neu']*100, "% Neutral") 
+    print("sentence was rated as ", sentiment_dict['pos']*100, "% Positive") 
+  
+    print("Sentence Overall Rated As", end = " ") 
+  
+    # decide sentiment as positive, negative and neutral 
+    if sentiment_dict['compound'] >= 0.05 : 
+        print("Positive") 
+  
+    elif sentiment_dict['compound'] <= - 0.05 : 
+        print("Negative") 
+  
+    else : 
+        print("Neutral") 
+        
+tweet=covid_tweet.loc[:,0]
+n=len(tweet)
+for x in range(n):
+    sentiment_scores(tweet[x])
+
+#Here we have computed the sentiment score of each individual tweet given in the dataset
+
+covid_text = r"tweets_corona.txt"
+splitLine = []
+oFile = open(covid_text, 'r', encoding="utf8")
+line = oFile.readline()
+while line:
+    splitLine.append(line.split('\n'))
+    line = oFile.readline()
+oFile.close()
+tweets = []
+for sublist in splitLine:
+    for item in sublist:
+        tweets.append(item)
+raw = ' '.join(tweets)
+tags = [re.sub(r"(\W+)$", "", j) for j in [i for i in raw.split() if i.startswith("#")]]
+covid_hashtag = pd.DataFrame({"hashtag": tags})
+covid_hashtags =covid_hashtag['hashtag'].value_counts().head(10)
+covid_hashtags = pd.DataFrame({'hashtag':covid_hashtags.index, 'val':covid_hashtags.values})
+covid_hashtags
+
+#Here we have formed a data frame of the top 10 hashtags along with the no of times they have been used
+
+import seaborn as sns
+sns.set()
+hash_counts=covid_hashtags['val']
+hash_bar=sns.barplot(x='hashtag',y='val',data=covid_hashtags)
+hash_bar.set_xticklabels(hash_bar.get_xticklabels(),rotation=45)
+
+#Here we have obtained the barplot of the top 10 hashtags
+
+values=covid_hashtags['val']
+labels=covid_hashtags['hashtag']
+explode=(0.1,0.1,0.1,0,0,0,0,0,0,0)
+plt.pie(values, labels=labels,explode=explode,autopct='%1.1f%%', shadow=True, startangle=140)
+plt.axis('equal')
+plt.show()
+
+#We have obtained a pie chart of the top 10 tweets using their relative frequencies
+
+covid_text = r"tweets_corona.txt"
+splitLine = []
+oFile = open(covid_text, 'r', encoding="utf8")
+line = oFile.readline()
+while line:
+    splitLine.append(line.split('\n'))
+    line = oFile.readline()
+oFile.close()
+tweets = []
+for sublist in splitLine:
+    for item in sublist:
+        tweets.append(item)
+raw = ' '.join(tweets)
+handles = [re.sub(r"(\W+)$", "", j) for j in [i for i in raw.split() if i.startswith("@")]]
+covid_handle = pd.DataFrame({"handle": handles})
+covid_handles =covid_handle['handle'].value_counts().head(10)
+covid_handles = pd.DataFrame({'handle':covid_handles.index, 'val':covid_handles.values})
+covid_handles
+
+#Here we have obtained the top 10 most active twitter handles
+
+import seaborn as sns
+sns.set()
+hand_bar=sns.barplot(x='handle',y='val',data=covid_handles)
+hand_bar.set_xticklabels(hand_bar.get_xticklabels(),rotation=45)
+
+#We have obtained a barplot of the top 10 twitter handles
+
+values1=covid_handles['val']
+labels1=covid_handles['handle']
+explode=(0.1,0.1,0.1,0,0,0,0,0,0,0)
+plt.pie(values1, labels=labels1,explode=explode,autopct='%1.1f%%', shadow=True, startangle=140)
+plt.axis('equal')
+plt.show()
+
+#We have obtained a pie chart of the top 10 twitter handles using their relative frequencies
+
